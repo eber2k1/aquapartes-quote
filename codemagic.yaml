@@ -1,0 +1,34 @@
+workflows:
+  ios-android-build:
+    name: Build iOS and Android
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Clean and Recreate iOS folder
+        script: |
+          rm -rf ios/
+          flutter create . --platforms ios
+          # Restore the custom Info.plist settings we made earlier
+          sed -i '' 's/<string>$(DEVELOPMENT_LANGUAGE)<\/string>/<string>es<\/string>/g' ios/Runner/Info.plist
+          sed -i '' 's/<string>Aquapartes Quote<\/string>/<string>Aquapartes<\/string>/g' ios/Runner/Info.plist
+          # Insert the photo library permission before LSRequiresIPhoneOS
+          sed -i '' '/<key>LSRequiresIPhoneOS<\/key>/i\
+          \	<key>NSPhotoLibraryUsageDescription<\/key>\
+          \	<string>Necesitamos acceso a tus fotos para poder subir imágenes a los productos y cotizaciones.<\/string>\
+          ' ios/Runner/Info.plist
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+      - name: Build iOS App (unsigned)
+        script: |
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+      - build/ios/iphoneos/Runner.app
