@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Necesitamos acceso a tus fotos para poder subir imágenes a los productos y cotizaciones.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Necesitamos acceso a tus contactos para que puedas importarlos directamente como clientes a la aplicación.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

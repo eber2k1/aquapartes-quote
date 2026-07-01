@@ -12,6 +12,7 @@ class ProductFormFields extends StatelessWidget {
     required this.modelController,
     required this.priceController,
     required this.nameValidator,
+    this.similarProductNames = const [],
   });
 
   final TextEditingController nameController;
@@ -23,9 +24,12 @@ class ProductFormFields extends StatelessWidget {
   final TextEditingController modelController;
   final TextEditingController priceController;
   final FormFieldValidator<String> nameValidator;
+  final List<String> similarProductNames;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       children: [
         TextFormField(
@@ -35,6 +39,51 @@ class ProductFormFields extends StatelessWidget {
           ),
           validator: nameValidator,
         ),
+        if (similarProductNames.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.errorContainer.withAlpha(150),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorScheme.error.withAlpha(100)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: theme.colorScheme.error,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Podria ser un duplicado. Ya existen productos similares:',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onErrorContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      ...similarProductNames.map(
+                        (name) => Text(
+                          '• $name',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         _SelectableTextFormField(
           controller: categoryController,

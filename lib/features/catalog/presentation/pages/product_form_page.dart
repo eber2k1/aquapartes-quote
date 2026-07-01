@@ -43,6 +43,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   final _originController = TextEditingController();
   final _modelController = TextEditingController();
   final List<ProductAttributeFieldControllers> _attributeFields = [];
+  List<String> _similarProductNames = [];
   String _imageUrl = '';
   String _imageFileName = '';
   String _technicalSheetUrl = '';
@@ -70,6 +71,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_onNameChanged);
 
     final initialProduct = widget.initialProduct;
     if (initialProduct == null) return;
@@ -94,6 +96,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _priceController.dispose();
     _categoryController.dispose();
@@ -110,6 +113,64 @@ class _ProductFormPageState extends State<ProductFormPage> {
     setState(() {
       _attributeFields.add(ProductAttributeFieldControllers.empty());
     });
+  }
+
+  void _onNameChanged() {
+    final input = _nameController.text.trim().toLowerCase();
+
+    if (input.length < 4) {
+      if (_similarProductNames.isNotEmpty) {
+        setState(() => _similarProductNames.clear());
+      }
+      return;
+    }
+
+    final currentName = widget.initialProduct?.name.trim().toLowerCase();
+    final inputTokens = input
+        .split(RegExp(r'\s+'))
+        .where((t) => t.length > 2)
+        .toSet();
+
+    final similars = widget.existingProducts
+        .where((product) {
+          final existingName = product.name.trim().toLowerCase();
+          if (currentName != null && existingName == currentName) {
+            return false;
+          }
+
+          // Coincidencia exacta o si contiene el texto completo
+          if (existingName == input || existingName.contains(input)) {
+            return true;
+          }
+
+          // Coincidencia por palabras (interseccion de tokens)
+          final existingTokens = existingName
+              .split(RegExp(r'\s+'))
+              .where((t) => t.length > 2)
+              .toSet();
+          final intersection = inputTokens.intersection(existingTokens);
+
+          return intersection.length >= 2;
+        })
+        .take(3)
+        .map((p) => p.name)
+        .toList();
+
+    bool listsAreEqual = _similarProductNames.length == similars.length;
+    if (listsAreEqual) {
+      for (int i = 0; i < similars.length; i++) {
+        if (_similarProductNames[i] != similars[i]) {
+          listsAreEqual = false;
+          break;
+        }
+      }
+    }
+
+    if (!listsAreEqual) {
+      setState(() {
+        _similarProductNames = similars;
+      });
+    }
   }
 
   void _removeAttribute(int index) {
@@ -326,6 +387,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                         modelController: _modelController,
                         priceController: _priceController,
                         nameValidator: _validateProductName,
+                        similarProductNames: _similarProductNames,
                       ),
                     ],
                   ),

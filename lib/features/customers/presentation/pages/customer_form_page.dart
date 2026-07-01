@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 import '../../../../../core/widgets/app_confirmation_dialog.dart';
+import '../../../../../core/services/app_notifications.dart';
 import '../../../auth/auth_module.dart';
 import '../../domain/entities/customer.dart';
 import '../models/customer_form_result.dart';
@@ -87,6 +89,53 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     Navigator.of(context).pop(const CustomerFormResult.deleted());
   }
 
+  Future<void> _importContact() async {
+    try {
+      final status = await FlutterContacts.permissions.request(
+        PermissionType.read,
+      );
+      if (status != PermissionStatus.granted &&
+          status != PermissionStatus.limited) {
+        AppNotifications.showInfo(
+          'Permiso denegado para acceder a los contactos.',
+        );
+        return;
+      }
+
+      final contact = await FlutterContacts.native.showPicker(
+        properties: {
+          ContactProperty.phone,
+          ContactProperty.email,
+          ContactProperty.organization,
+          ContactProperty.address,
+        },
+      );
+
+      if (contact == null) return;
+
+      setState(() {
+        _contactNameController.text = contact.displayName ?? '';
+        if (contact.phones.isNotEmpty) {
+          _phoneController.text = contact.phones.first.number;
+        }
+        if (contact.emails.isNotEmpty) {
+          _emailController.text = contact.emails.first.address;
+        }
+        if (contact.organizations.isNotEmpty) {
+          _companyNameController.text = contact.organizations.first.name ?? '';
+        } else {
+          _companyNameController.text = contact.displayName ?? '';
+        }
+        if (contact.addresses.isNotEmpty) {
+          _addressController.text = contact.addresses.first.formatted ?? '';
+        }
+      });
+      AppNotifications.showInfo('Contacto importado correctamente.');
+    } catch (e) {
+      AppNotifications.showDelete('Error al importar el contacto.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -94,6 +143,14 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Editar cliente' : 'Anadir cliente'),
+        actions: [
+          if (!widget.isEditing)
+            IconButton(
+              icon: const Icon(Icons.contact_phone_outlined),
+              tooltip: 'Importar desde contactos',
+              onPressed: _importContact,
+            ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
