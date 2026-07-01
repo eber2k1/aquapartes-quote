@@ -44,16 +44,16 @@ class ProductFormFields extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.errorContainer.withAlpha(150),
+              color: Colors.orange.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.colorScheme.error.withAlpha(100)),
+              border: Border.all(color: Colors.orange.shade300),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.warning_amber_rounded,
-                  color: theme.colorScheme.error,
+                  color: Colors.orange.shade800,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -64,7 +64,7 @@ class ProductFormFields extends StatelessWidget {
                       Text(
                         'Podria ser un duplicado. Ya existen productos similares:',
                         style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.onErrorContainer,
+                          color: Colors.orange.shade900,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -73,7 +73,7 @@ class ProductFormFields extends StatelessWidget {
                         (name) => Text(
                           '• $name',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onErrorContainer,
+                            color: Colors.orange.shade900,
                           ),
                         ),
                       ),
